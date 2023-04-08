@@ -1,25 +1,30 @@
 import Layout from '@/components/Layout';
+import Product from '@/models/Product';
 import { Store } from '@/utils/Store';
-import data from '@/utils/data';
+//import data from '@/utils/data';
+import db from '@/utils/db';
+import axios from 'axios';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext } from 'react';
+import { toast } from 'react-toastify';
 
-export default function ProductDetails() {
+export default function ProductDetails({ product }) {
     const { state, dispatch } = useContext(Store);
     const router = useRouter();
     const { query } = useRouter();
-    const { slug } = query;
-    const product = data.products.find(p => p.slug === slug);
+    //const { slug } = query;
+    //const product = data.products.find(p => p.slug === slug);
     if(!product) {
-        return <div>Product Not Found</div>
+        return <Layout title="Product Not Found"><div>Product Not Found</div></Layout>
     }
-  const addToCartHandler = () => {
+  const addToCartHandler = async () => {
     const existingItem = state.cart.cartItems.find(x => x.slug === product.slug);
     const quantity = existingItem ? existingItem.quantity + 1 : 1;
-    if(product.countInStock < quantity) {
-        alert('Sorry, Product is out of stock');
+    const { data } = await axios.get(`/api/products/${product._id}`);
+    if(data.countInStock < quantity) {
+        toast.error('Sorry, Product is out of stock');
         return;
     }
     dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity }})
@@ -69,4 +74,17 @@ export default function ProductDetails() {
         </div>
     </Layout>
   )
+}
+
+export async function getServerSideProps(context) {
+    const { params } = context;
+    const { slug } = params;
+    await db.connect();
+    const product = await Product.findOne({ slug }).lean();
+    await db.disconnect();
+    return {
+        props: {
+            product: product ? db.convertDocToObj(product) : null
+        }
+    }
 }
