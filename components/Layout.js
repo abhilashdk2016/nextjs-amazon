@@ -55,7 +55,7 @@ export default function Layout({ children, title }) {
                                         </DropdownLink>
                                     </Menu.Item>
                                     <Menu.Item>
-                                        <DropdownLink className="dropdown-link" href='/order-history'>
+                                        <DropdownLink className="dropdown-link" href={`/order-history/${session?.user._id}`}>
                                             Order History
                                         </DropdownLink>
                                     </Menu.Item>
