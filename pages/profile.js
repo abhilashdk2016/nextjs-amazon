@@ -28,12 +28,12 @@ export default function ProfileScreen() {
         name,
         email,
         password,
+        user: session.user
       });
       const result = await signIn('credentials', {
         redirect: false,
         email,
-        password,
-        user: session.user
+        password
       });
       toast.success('Profile updated successfully');
       if (result.error) {
